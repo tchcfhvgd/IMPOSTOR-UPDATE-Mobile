@@ -23,7 +23,7 @@ class CreditsVideo extends FlxState
 		if(!OpenFlAssets.exists(filepath))
 		#end
 		{
-			FlxG.log.warn('Couldnt find video file: ' + name);
+			FlxG.log.warn('Couldnt find video file: ' + 'credits');
 			next();
 			return;
 		}
