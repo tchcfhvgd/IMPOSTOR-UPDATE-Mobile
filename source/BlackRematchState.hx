@@ -45,47 +45,36 @@ class BlackRematchState extends MusicBeatState
 		super.update(elapsed);
 	}
 
-    public function startVideo(name:String):Void {
-
-        var finishCallback:Void->Void;
-
-        finishCallback = goToMenu; 
-        
+    public function startVideo(name:String)
+	{
 		#if VIDEOS_ALLOWED
-		var foundFile:Bool = false;
-		var fileName:String = #if MODS_ALLOWED Paths.modFolders('videos/' + name + '.' + Paths.VIDEO_EXT); #else ''; #end
+		var filepath:String = Paths.video(name);
 		#if sys
-		if(FileSystem.exists(fileName)) {
-			foundFile = true;
-		}
+		if(!FileSystem.exists(filepath))
+		#else
+		if(!OpenFlAssets.exists(filepath))
 		#end
-
-		if(!foundFile) {
-			fileName = Paths.video(name);
-			#if sys
-			if(FileSystem.exists(fileName)) {
-			#else
-			if(OpenFlAssets.exists(fileName)) {
-			#end
-				foundFile = true;
-			}
-		}
-
-		if(foundFile) {
-			var bg = new FlxSprite(-FlxG.width, -FlxG.height).makeGraphic(FlxG.width * 3, FlxG.height * 3, FlxColor.BLACK);
-			bg.scrollFactor.set();
-			add(bg);
-
-			(new FlxVideo(fileName)).finishCallback = function() {
-				remove(bg);
-                finishCallback();
-			}
+		{
+			FlxG.log.warn('Couldnt find video file: ' + name);
+			goToMenu();
 			return;
-		} else {
-			FlxG.log.warn('Couldnt find video file: ' + fileName);
 		}
+
+		var video:FlxVideo = new FlxVideo();
+		video.load(filepath);
+		video.play();
+		video.onEndReached.add(function()
+		{
+			video.dispose();
+			goToMenu();
+			return;
+		}, true);
+
+		#else
+		FlxG.log.warn('Platform not supported!');
+		goToMenu();
+		return;
 		#end
 	}
-
 
 }
