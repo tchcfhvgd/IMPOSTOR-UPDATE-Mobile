@@ -13,6 +13,9 @@ import openfl.Lib;
 import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.events.Event;
+#if mobile
+import mobile.CopyState;
+#end
 
 class Main extends Sprite
 {
@@ -32,10 +35,33 @@ class Main extends Sprite
 	public static function main():Void
 	{
 		Lib.current.addChild(new Main());
+		#if cpp
+		cpp.NativeGc.enable(true);
+		#elseif hl
+		hl.Gc.enable(true);
+		#end
 	}
 
 	public function new()
 	{
+		#if mobile
+		#if android
+		StorageUtil.requestPermissions();
+		#end
+		Sys.setCwd(StorageUtil.getStorageDirectory());
+		#end
+
+		CrashHandler.init();
+
+		#if windows
+		@:functionCode("
+		#include <windows.h>
+		#include <winuser.h>
+		setProcessDPIAware() // allows for more crisp visuals
+		DisableProcessWindowsGhosting() // lets you move the window and such if it's not responding
+		")
+		#end
+		
 		super();
 
 		if (stage != null)
@@ -61,70 +87,44 @@ class Main extends Sprite
 
 	private function setupGame():Void
 	{
-		var stageWidth:Int = Lib.current.stage.stageWidth;
-		var stageHeight:Int = Lib.current.stage.stageHeight;
-
-		if (zoom == -1)
-		{
-			var ratioX:Float = stageWidth / gameWidth;
-			var ratioY:Float = stageHeight / gameHeight;
-			zoom = Math.min(ratioX, ratioY);
-			gameWidth = Math.ceil(stageWidth / zoom);
-			gameHeight = Math.ceil(stageHeight / zoom);
-		}
-
-		#if !debug
-		initialState = TitleState;
-		#end
-		
 		ClientPrefs.startControls();
 
-		#if cpp 
-		Gc.enable(true);
-		#end
-
 		// Paths.getModFolders();
-		addChild(new FlxGame(gameWidth, gameHeight, initialState, framerate, framerate, skipSplash, startFullscreen));
-		FlxGraphic.defaultPersist = false;
+		addChild(new FlxGame(gameWidth, gameHeight, #if (mobile && MODS_ALLOWED) !CopyState.checkExistingFiles() ? CopyState : #end initialState, framerate, framerate, skipSplash, startFullscreen));
 
 		FlxG.signals.gameResized.add(onResizeGame);
-		// FlxG.signals.preStateSwitch.add(function () {
-		// 	Paths.clearStoredMemory(true);
-		// 	FlxG.bitmap.dumpCache();
-
-		// 	var cache = cast(Assets.cache, AssetCache);
-		// 	for (key=>font in cache.font)
-		// 		cache.removeFont(key);
-		// 	for (key=>sound in cache.sound)
-		// 		cache.removeSound(key);
-
-		// 	gc();
-		// });
-		// FlxG.signals.postStateSwitch.add(function () {
-		// 	Paths.clearUnusedMemory();
-		// 	gc();
-
-		// 	trace(System.totalMemory);
-		// });
+		FlxG.signals.preStateSwitch.add(function () {
+	    Paths.clearStoredMemory(true);
+		FlxG.bitmap.dumpCache();
+		});
+	    FlxG.signals.postStateSwitch.add(function () {
+		Paths.clearUnusedMemory();
+		trace(System.totalMemory);
+		});
 		
-		#if !mobile
 		fpsCounter = new FPS(10, 5, 0xFFFFFF);
+		#if !mobile
 		addChild(fpsCounter);
+		#else
+		FlxG.game.addChild(fpsCounter);
+		#end
 
-		fpsVar = new FPS(10, 3, 0xFFFFFF);
 		if(fpsCounter != null) { 
 			fpsCounter.visible = ClientPrefs.showFPS;
 		}
-		#end
 
-		trace(FlxG.save.path)
-		;
-
-		
+		trace(FlxG.save.path);
 
 		#if html5
 		FlxG.autoPause = false;
 		FlxG.mouse.visible = false;
+		#end
+		
+		#if mobile
+		lime.system.System.allowScreenTimeout = ClientPrefs.screensaver;
+		#if android
+		FlxG.android.preventDefaultKeys = [BACK]; 
+		#end
 		#end
 	}
 
@@ -175,11 +175,4 @@ class Main extends Sprite
 		return fpsCounter.currentFPS;
 	}
 
-	public static function gc() {
-		#if cpp
-		Gc.run(true);
-		#else
-		openfl.system.System.gc();
-		#end
-	}
 }

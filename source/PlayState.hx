@@ -4676,42 +4676,43 @@ class PlayState extends MusicBeatState
 		char.y += char.positionArray[1];
 	}
 
-	public function startVideo(name:String):Void
+	public function startVideo(name:String)
 	{
-	#if VIDEOS_ALLOWED
-	var foundFile:Bool = false;
-	var fileName:String = #if MODS_ALLOWED Paths.modFolders('videos/' + name + '.' + Paths.VIDEO_EXT); #else ''; #end
-	#if sys
-	if (FileSystem.exists(fileName))
-	{
-		foundFile = true;
-	}
-	#end
+		#if VIDEOS_ALLOWED
+		inCutscene = true;
 
-	if (!foundFile)
-	{
-		fileName = Paths.video(name);
+		var filepath:String = Paths.video(name);
 		#if sys
-		if (FileSystem.exists(fileName))
-		{
+		if(!FileSystem.exists(filepath))
 		#else
-		if (OpenFlAssets.exists(fileName))
-		{
+		if(!OpenFlAssets.exists(filepath))
 		#end
-			foundFile = true;
-		}
-		} if (foundFile)
 		{
-			inCutscene = true;
-			var bg = new FlxSprite(-FlxG.width, -FlxG.height).makeGraphic(FlxG.width * 3, FlxG.height * 3, FlxColor.BLACK);
-			bg.scrollFactor.set();
-			bg.cameras = [camHUD];
-			add(bg);
+			FlxG.log.warn('Couldnt find video file: ' + name);
+			startAndEnd();
+			return;
+		}
 
-			(new FlxVideo(fileName)).finishCallback = function()
-			{
-				remove(bg);
-				if (endingSong)
+		var video:FlxVideo = new FlxVideo();
+		video.load(filepath);
+		video.play();
+		video.onEndReached.add(function()
+		{
+			video.dispose();
+			startAndEnd();
+			return;
+		}, true);
+
+		#else
+		FlxG.log.warn('Platform not supported!');
+		startAndEnd();
+		return;
+		#end
+	}
+
+	function startAndEnd()
+	{
+		if (endingSong)
 				{
 					endSong();
 				}
@@ -4725,28 +4726,6 @@ class PlayState extends MusicBeatState
                         startCountdown();
                     }
 				}
-			}
-			return;
-		}
-		else
-		{
-			FlxG.log.warn('Couldnt find video file: ' + fileName);
-		}
-		#end
-		if (endingSong)
-		{
-			endSong();
-		}
-		else
-		{
-			if(piss == false) {
-                trace('oh  nvm');
-                schoolIntro(doof);
-            }
-			if(piss == true) {
-				startCountdown();
-			}
-		}
 	}
 
 	var dialogueCount:Int = 0;

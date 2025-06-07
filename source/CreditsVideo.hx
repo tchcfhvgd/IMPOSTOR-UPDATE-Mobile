@@ -8,8 +8,6 @@ using StringTools;
 
 class CreditsVideo extends FlxState
 {
-	var oldFPS:Int = VideoHandler.MAX_FPS;
-	var video:VideoHandler;
 	var titleState = new TitleState();
 
 	override public function create():Void
@@ -17,23 +15,35 @@ class CreditsVideo extends FlxState
 
 		super.create();
 
-		VideoHandler.MAX_FPS = 60;
-
-		video = new VideoHandler();
-
-		video.playMP4(Paths.video('credits'), function(){
+		#if VIDEOS_ALLOWED
+		var filepath:String = Paths.video('credits');
+		#if sys
+		if(!FileSystem.exists(filepath))
+		#else
+		if(!OpenFlAssets.exists(filepath))
+		#end
+		{
+			FlxG.log.warn('Couldnt find video file: ' + name);
 			next();
-			#if web
-				VideoHandler.MAX_FPS = oldFPS;
-			#end
-		}, false, false);
+			return;
+		}
 
-		video.width = 1280;
-		video.height = 720;
-		video.updateHitbox();
-		video.setPosition(0,0);
+		var video:FlxVideo = new FlxVideo();
+		video.load(filepath);
+		video.play();
+		video.onEndReached.add(function()
+		{
+			video.dispose();
+			next();
+			return;
+		}, true);
 
-		add(video);
+		#else
+		FlxG.log.warn('Platform not supported!');
+		next();
+		return;
+		#end
+
 	}
 
 	override public function update(elapsed:Float){
