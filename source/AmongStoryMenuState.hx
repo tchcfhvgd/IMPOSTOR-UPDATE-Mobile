@@ -114,6 +114,8 @@ class AmongStoryMenuState extends MusicBeatState
 	{
 		super.create();
 
+		FlxG.mouse.visible = false;
+		
 		Paths.clearUnusedMemory();
 
 		localFinaleState = ClientPrefs.finaleState;
@@ -575,6 +577,7 @@ class AmongStoryMenuState extends MusicBeatState
 		changeWeek();
 		
 		addTouchPad("LEFT_FULL", "A_B_C");
+		addTouchPadCamera();
 	
 	}
 

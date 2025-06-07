@@ -7,7 +7,7 @@ import flixel.system.FlxAssets.FlxShader;
 class HeatwaveShader extends FlxBasic
 {
     public var shader(default, null):FabsShaderGLSL = new FabsShaderGLSL();
-    var iTime:Float = 0;
+    var iTime:Float = 0.0;
 
     public function new():Void{
         super();

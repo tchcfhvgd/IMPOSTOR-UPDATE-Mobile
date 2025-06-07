@@ -11,9 +11,9 @@ class ChromaticAbberation extends FlxBasic
 {
     public var shader(default, null):CAGLSL = new CAGLSL();
 
-    var iTime:Float = 0;
+    var iTime:Float = 0.0;
 
-    public var amount(default, set):Float = 0;
+    public var amount(default, set):Float = 0.0;
 
     public function new(_amount:Float):Void{
         super();

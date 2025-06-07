@@ -114,7 +114,7 @@ class AmongFreeplayState extends MusicBeatState
 
 		Paths.clearUnusedMemory();
 
-		FlxG.mouse.visible = true;	
+		FlxG.mouse.visible = false;	
 
 		localBeans = ClientPrefs.beans;
 
@@ -323,6 +323,7 @@ class AmongFreeplayState extends MusicBeatState
 		changePortrait();
 		
 		addTouchPad("LEFT_FULL", "A_B");
+		addTouchPadCamera();
 	}
 
 	public var inSubstate:Bool = false;

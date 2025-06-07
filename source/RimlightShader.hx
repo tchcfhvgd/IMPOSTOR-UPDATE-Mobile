@@ -11,19 +11,19 @@ class RimlightShader extends FlxBasic
 {
 	public var shader(default, null):RimlightShaderGLSL = new RimlightShaderGLSL();
 
-	public var angle(default, set):Float = 0;
-	public var distance(default, set):Float = 10;
+	public var angle(default, set):Float = 0.0;
+	public var distance(default, set):Float = 10.0;
 	public var rimlightColor(default, set):FlxColor = 0xFFFFFFFF;
 	public var refSprite:FlxSprite;
 
-	public function new(_angle:Float = 0, _distance:Float = 10, _rimlightColor:FlxColor = 0xFFFFFFFF, _refSprite:FlxSprite):Void{
+	public function new(_angle:Float = 0.0, _distance:Float = 10.0, _rimlightColor:FlxColor = 0xFFFFFFFF, _refSprite:FlxSprite):Void{
 		super();
 		angle = _angle;
 		distance = _distance;
 		rimlightColor = _rimlightColor;
 		refSprite = _refSprite;
 
-		shader.pixelSize.value = [1/refSprite.graphic.width, 1/refSprite.graphic.height];
+		shader.pixelSize.value = [1.0/refSprite.graphic.width, 1.0/refSprite.graphic.height];
 	}
 
 	override public function update(elapsed:Float):Void{
