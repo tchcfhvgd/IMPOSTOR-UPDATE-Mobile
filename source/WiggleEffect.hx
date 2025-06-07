@@ -16,23 +16,23 @@ class WiggleEffect
 {
 	public var shader(default, null):WiggleShader = new WiggleShader();
 	public var effectType(default, set):WiggleEffectType = DREAMY;
-	public var waveSpeed(default, set):Float = 0;
-	public var waveFrequency(default, set):Float = 0;
-	public var waveAmplitude(default, set):Float = 0;
+	public var waveSpeed(default, set):Float = 0.0;
+	public var waveFrequency(default, set):Float = 0.0;
+	public var waveAmplitude(default, set):Float = 0.0;
 
 	public function new():Void
 	{
-		shader.uTime.value = [0];
+		shader.uTime.value = [0.0];
 	}
 
 	public function update(elapsed:Float):Void
 	{
-		shader.uTime.value[0] += elapsed;
+		shader.uTime.value[0.0] += elapsed;
 	}
 
 	public function setValue(value:Float):Void
 	{
-		shader.uTime.value[0] = value;
+		shader.uTime.value[0.0] = value;
 	}
 
 	function set_effectType(v:WiggleEffectType):WiggleEffectType
