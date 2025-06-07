@@ -25,6 +25,7 @@ import sys.FileSystem;
 class HenryState extends MusicBeatState
 {
     
+    var finishCallback:Void->Void;
     var freezeFrame:FlxSprite;
     var grad:FlxSprite;
 
@@ -246,10 +247,8 @@ class HenryState extends MusicBeatState
         }
 	}
 
-    public function startVideo(name:String, funcToCall:Int):Void
+    public function startVideo(name:String, funcToCall:Int)
 	{
-		var finishCallback:Void->Void;
-
         switch(funcToCall){
             case 0:
                 finishCallback = options; 
