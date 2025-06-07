@@ -128,6 +128,7 @@ class Paths
 
 	static public var currentModDirectory:String = '';
 	static public var currentLevel:String;
+
 	static public function setCurrentLevel(name:String)
 	{
 		currentLevel = name.toLowerCase();
@@ -137,18 +138,24 @@ class Paths
 	{
 		if (library == "mobile")
 			return getPreloadPath('mobile/$file');
-		
+
 		if (library != null)
 			return getLibraryPath(file, library);
 
-		var levelPath:String = '';
-		levelPath = getLibraryPathForce(file, currentLevel);
-		if (OpenFlAssets.exists(levelPath, type))
-			return levelPath;
+		if (currentLevel != null)
+		{
+			var levelPath:String = '';
+			if (currentLevel != 'shared')
+			{
+				levelPath = getLibraryPathForce(file, currentLevel);
+				if (OpenFlAssets.exists(levelPath, type))
+					return levelPath;
+			}
 
-		levelPath = getLibraryPathForce(file, "shared");
-		if (FileSystem.exists(levelPath))
-			return levelPath;
+			levelPath = getLibraryPathForce(file, "shared");
+			if (OpenFlAssets.exists(levelPath, type))
+				return levelPath;
+		}
 
 		return getPreloadPath(file);
 	}
@@ -160,7 +167,7 @@ class Paths
 
 	inline static function getLibraryPathForce(file:String, library:String)
 	{
-		var returnPath = 'assets/$library/$file';
+		var returnPath = '$library:assets/$library/$file';
 		return returnPath;
 	}
 
@@ -248,7 +255,8 @@ class Paths
 		return inst;
 	}
 
-	inline static public function image(key:String, ?library:String):Dynamic {
+	inline static public function image(key:String, ?library:String):FlxGraphic
+	{
 		// streamlined the assets process more
 		var returnAsset:FlxGraphic = returnGraphic(key, library);
 		return returnAsset;
@@ -310,13 +318,15 @@ class Paths
 	inline static public function getSparrowAtlas(key:String, ?library:String):FlxAtlasFrames
 	{
 		#if MODS_ALLOWED
-		var imageLoaded:FlxGraphic = returnGraphic(key, library);
+		var imageLoaded:FlxGraphic = returnGraphic(key);
 		var xmlExists:Bool = false;
-		if(FileSystem.exists(modsXml(key))) {
+		if (FileSystem.exists(modsXml(key)))
+		{
 			xmlExists = true;
 		}
 
-		return FlxAtlasFrames.fromSparrow((imageLoaded != null ? imageLoaded : image(key, library)), (xmlExists ? File.getContent(modsXml(key)) : File.getContent(file('images/$key.xml', library))));
+		return FlxAtlasFrames.fromSparrow((imageLoaded != null ? imageLoaded : image(key, library)),
+			(xmlExists ? File.getContent(modsXml(key)) : file('images/$key.xml', library)));
 		#else
 		return FlxAtlasFrames.fromSparrow(image(key, library), file('images/$key.xml', library));
 		#end
