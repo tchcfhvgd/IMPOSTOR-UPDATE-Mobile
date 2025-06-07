@@ -22,17 +22,17 @@ class WiggleEffect
 
 	public function new():Void
 	{
-		shader.uTime.value = [0.0];
+		shader.uTime.value = [0];
 	}
 
 	public function update(elapsed:Float):Void
 	{
-		shader.uTime.value[0.0] += elapsed;
+		shader.uTime.value[0] += elapsed;
 	}
 
 	public function setValue(value:Float):Void
 	{
-		shader.uTime.value[0.0] = value;
+		shader.uTime.value[0] = value;
 	}
 
 	function set_effectType(v:WiggleEffectType):WiggleEffectType
