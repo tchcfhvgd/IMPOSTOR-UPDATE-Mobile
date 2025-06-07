@@ -268,9 +268,7 @@ class HenryState extends MusicBeatState
 		#end
 		{
 			FlxG.log.warn('Couldnt find video file: ' + name);
-			if (finishCallback == null) throw 'finish callback was null?';
-                else
-                    finishCallback();
+	        finishCallback();
 			return;
 		}
 
@@ -280,17 +278,13 @@ class HenryState extends MusicBeatState
 		video.onEndReached.add(function()
 		{
 			video.dispose();
-			if (finishCallback == null) throw 'finish callback was null?';
-                else
-                    finishCallback();
+            finishCallback();
 			return;
 		}, true);
 
 		#else
 		FlxG.log.warn('Platform not supported!');
-		if (finishCallback == null) throw 'finish callback was null?';
-                else
-                    finishCallback();
+		finishCallback();
 		return;
 		#end
 	}
