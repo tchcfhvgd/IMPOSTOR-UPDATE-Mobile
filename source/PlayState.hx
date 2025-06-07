@@ -81,6 +81,10 @@ import Discord.DiscordClient;
 import sys.FileSystem;
 #end
 
+import mobile.TouchButton;
+import mobile.TouchPad;
+import mobile.input.MobileInputID;
+
 class PlayState extends MusicBeatState
 {
 	var noteRows:Array<Array<Array<Note>>> = [[],[]];
@@ -3957,6 +3961,15 @@ class PlayState extends MusicBeatState
 
 		// startCountdown();
 
+		#if !android
+		addTouchPad("NONE", "P");
+		addTouchPadCamera();
+		touchPad.visible = true;
+		#end
+		addMobileControls();
+		mobileControls.onButtonDown.add(onButtonPress);
+		mobileControls.onButtonUp.add(onButtonRelease);
+		
 		generateSong(SONG.song);
 		#if LUA_ALLOWED
 		for (notetype in noteTypeMap.keys())
@@ -4569,6 +4582,102 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	private function onButtonPress(button:TouchButton):Void
+	{
+		if (button.IDs.filter(id -> id.toString().startsWith("EXTRA")).length > 0)
+			return;
+
+		var buttonCode:Int = (button.IDs[0].toString().startsWith('NOTE')) ? button.IDs[0] : button.IDs[1];
+
+		if (!cpuControlled && startedCountdown && !paused && buttonCode > -1 && button.justPressed)
+		{
+			if (generatedMusic)
+			{
+				var previousTime:Float = Conductor.songPosition;
+				Conductor.songPosition = FlxG.sound.music.time;
+				// improved this a little bit, maybe its a lil
+				var possibleNoteList:Array<Note> = [];
+				var pressedNotes:Array<Note> = [];
+
+				notes.forEachAlive(function(daNote:Note)
+				{
+					if ((daNote.noteData == buttonCode) && daNote.canBeHit && !daNote.isSustainNote && !daNote.tooLate && !daNote.wasGoodHit)
+						possibleNoteList.push(daNote);
+				});
+				possibleNoteList.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
+
+				// if there is a list of notes that exists for that control
+				if (possibleNoteList.length > 0)
+				{
+					var eligable = true;
+					var firstNote = true;
+					// loop through the possible notes
+					for (coolNote in possibleNoteList)
+					{
+						for (noteDouble in pressedNotes)
+						{
+							if (Math.abs(noteDouble.strumTime - coolNote.strumTime) < 10)
+								firstNote = false;
+							else
+								eligable = false;
+						}
+
+						if (eligable)
+						{
+							goodNoteHit(coolNote); // then hit the note
+							pressedNotes.push(coolNote);
+						}
+						// end of this little check
+					}
+					//
+				}
+				else // else just call bad notes
+					if (!ClientPrefs.ghostTapping)
+						noteMissPress(buttonCode, true);
+				Conductor.songPosition = previousTime;
+			}
+
+			if (playerStrums.members[buttonCode] != null && playerStrums.members[buttonCode].animation.curAnim.name != 'confirm')
+				playerStrums.members[buttonCode].playAnim('pressed');
+		}
+
+		if (buttonCode == 2)
+		{
+			if (boyfriend.animation.curAnim.name == 'idle' && boyfriend.curCharacter == 'greenp')
+			{
+				boyfriend.playAnim('singUP', true);
+				boyfriend.animation.curAnim.curFrame = 5;
+				boyfriend.heyTimer = 0.6;
+			}
+		}
+		if (buttonCode == 1)
+		{
+			if (boyfriend.animation.curAnim.name == 'idle' && boyfriend.curCharacter == 'redp')
+			{
+				boyfriend.playAnim('hey', true);
+				boyfriend.specialAnim = true;
+				boyfriend.heyTimer = 0.6;
+			}
+		}
+	}
+
+	private function onButtonRelease(button:TouchButton):Void
+	{
+		if (button.IDs.filter(id -> id.toString().startsWith("EXTRA")).length > 0)
+			return;
+
+		var buttonCode:Int = (button.IDs[0].toString().startsWith('NOTE')) ? button.IDs[0] : button.IDs[1];
+
+		if (!cpuControlled && startedCountdown && !paused && buttonCode > -1)
+		{
+			// receptor reset
+			if (buttonCode >= 0 && playerStrums.members[buttonCode] != null)
+				playerStrums.members[buttonCode].playAnim('static');
+			callOnLuas('onKeyRelease', [buttonCode]);
+			callOnLuas('onButtonRelease', [buttonCode]);
+		}
+	}
+	
 	private var keysArray:Array<Dynamic>;
 
 	public function addTextToDebug(text:String)
@@ -4867,7 +4976,7 @@ class PlayState extends MusicBeatState
 					opponentStrums.members[i].visible = false;
 			}
 
-			startedCountdown = true;
+			startedCountdown = mobileControls.instance.visible = true;
 			Conductor.songPosition = 0;
 			Conductor.songPosition -= Conductor.crochet * 5;
 			setOnLuas('startedCountdown', true);
@@ -6307,7 +6416,7 @@ class PlayState extends MusicBeatState
 		}
 		botplayTxt.visible = cpuControlled;
 
-		if (FlxG.keys.justPressed.ENTER && startedCountdown && canPause)
+		if ((FlxG.keys.justPressed.ENTER || #if android FlxG.android.justReleased.BACK #else touchPad.buttonP.justPressed #end) && startedCountdown && canPause)
 		{
 			var ret:Dynamic = callOnLuas('onPause', []);
 			if (ret != FunkinLua.Function_Stop)
@@ -8815,6 +8924,8 @@ class PlayState extends MusicBeatState
 
 		deathCounter = 0;
 		seenCutscene = false;
+		
+		mobileControls.instance.visible = #if !android touchPad.visible = #end false;
 
 		#if ACHIEVEMENTS_ALLOWED
 		if (achievementObj != null)

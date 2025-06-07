@@ -99,6 +99,8 @@ class SkinState extends MusicBeatState
 		}
 
 		changeItem();
+		
+		addTouchPad("UP_DOWN", "A_B");
 	}
 
 	var selectedSomethin:Bool = false;

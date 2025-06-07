@@ -113,7 +113,11 @@ class AmongDifficultySubstate extends MusicBeatSubstate
 			// });
 		}
 		else
+		{
 			openMissLimit();
+			addTouchPad("LEFT_RIGHT", "A");
+	        addTouchPadCamera();
+		}
 	}
 
 	function loadState() {

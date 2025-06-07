@@ -31,7 +31,7 @@ using StringTools;
 // TO DO: Redo the menu creation system for not being as dumb
 class OptionsState extends MusicBeatState
 {
-	var options:Array<String> = ['Notes', 'Controls', 'Preferences'];
+	var options:Array<String> = ['Notes', 'Controls', 'Preferences', 'Mobile Options'];
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
 	public static var menuBG:FlxSprite;
@@ -70,10 +70,15 @@ class OptionsState extends MusicBeatState
 			grpOptions.add(optionText);
 		}
 		changeSelection();
+		
+		addTouchPad("UP_DOWN", "A_B_C");
 	}
 
 	override function closeSubState() {
 		super.closeSubState();
+		persistentUpdate = true;
+		removeTouchPad();
+		addTouchPad("UP_DOWN", "A_B_C");
 		ClientPrefs.saveSettings();
 		changeSelection();
 	}
@@ -93,7 +98,13 @@ class OptionsState extends MusicBeatState
 			MusicBeatState.switchState(new MainMenuState());
 		}
 
+		if (touchPad != null && touchPad.buttonC.justPressed) {
+			touchPad.active = touchPad.visible = persistentUpdate = false;
+			openSubState(new mobile.MobileControlSelectSubState());
+		}
+		
 		if (controls.ACCEPT) {
+			persistentUpdate = false;
 			for (item in grpOptions.members) {
 				item.alpha = 0;
 			}
@@ -101,12 +112,18 @@ class OptionsState extends MusicBeatState
 			switch(options[curSelected]) {
 				case 'Notes':
 					openSubState(new NotesSubstate());
+					removeTouchPad();
 
 				case 'Controls':
 					openSubState(new ControlsSubState());
+					removeTouchPad();
 
 				case 'Preferences':
 					openSubState(new PreferencesSubstate());
+					removeTouchPad();
+				case 'Mobile Options':
+				    openSubState(new mobile.options.MobileOptionsSubState());
+				removeTouchPad();
 			}
 		}
 	}
@@ -189,6 +206,8 @@ class NotesSubstate extends MusicBeatSubstate
 		hsvText = new Alphabet(0, 0, "Hue    Saturation  Brightness", true, false, 0, 0.65);
 		add(hsvText);
 		changeSelection();
+		
+		addTouchPad("LEFT_FULL", "A_B_C");
 	}
 
 	var changingNote:Bool = false;
@@ -202,7 +221,7 @@ class NotesSubstate extends MusicBeatSubstate
 				} else if(controls.UI_RIGHT_P) {
 					updateValue(1);
 					FlxG.sound.play(Paths.sound('scrollMenu'));
-				} else if(controls.RESET) {
+				} else if(controls.RESET || touchPad.buttonC.justPressed) {
 					resetValue(curSelected, typeSelected);
 					FlxG.sound.play(Paths.sound('scrollMenu'));
 				}
@@ -243,7 +262,7 @@ class NotesSubstate extends MusicBeatSubstate
 				changeType(1);
 				FlxG.sound.play(Paths.sound('scrollMenu'));
 			}
-			if(controls.RESET) {
+			if(controls.RESET || touchPad.buttonC.justPressed) {
 				for (i in 0...3) {
 					resetValue(curSelected, i);
 				}
@@ -482,6 +501,8 @@ class ControlsSubState extends MusicBeatSubstate {
 			}
 		}
 		changeSelection();
+		
+		addTouchPad("LEFT_FULL", "A_B");
 	}
 
 	var leaving:Bool = false;
@@ -746,10 +767,8 @@ class PreferencesSubstate extends MusicBeatSubstate
 		'Hide HUD',
 		'Hide Song Length',
 		'Flashing Lights',
-		'Camera Zooms'
-		#if !mobile
-		,'FPS Counter'
-		#end
+		'Camera Zooms',
+		'FPS Counter'
 	];
 
 	private var grpOptions:FlxTypedGroup<Alphabet>;
@@ -832,6 +851,8 @@ class PreferencesSubstate extends MusicBeatSubstate
 		}
 		changeSelection();
 		reloadValues();
+		
+		addTouchPad("LEFT_FULL", "A_B");
 	}
 
 	var nextAccept:Int = 5;

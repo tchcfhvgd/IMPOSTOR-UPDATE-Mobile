@@ -322,7 +322,7 @@ class AmongFreeplayState extends MusicBeatState
 		changeSelection(0);
 		changePortrait();
 		
-		
+		addTouchPad("LEFT_FULL", "A_B");
 	}
 
 	public var inSubstate:Bool = false;

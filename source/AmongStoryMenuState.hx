@@ -573,12 +573,16 @@ class AmongStoryMenuState extends MusicBeatState
 		FlxG.camera.follow(ship, LOCKON, 1);
 
 		changeWeek();
+		
+		addTouchPad("LEFT_FULL", "A_B_C");
 	
 	}
 
 	override function closeSubState()
 	{
 		persistentUpdate = true;
+		removeTouchPad();
+		addTouchPad("LEFT_FULL", "A_B_C");
 		changeWeek();
 		super.closeSubState();
 	}
@@ -787,9 +791,9 @@ class AmongStoryMenuState extends MusicBeatState
 					selectingDifficulty = true;
 					selectedWeek = true;
 				}
-				else if (controls.RESET && curWeek != 0)
+				else if ((controls.RESET || touchPad.buttonC.justPressed) && curWeek != 0)
 				{
-					persistentUpdate = false;
+					touchPad.active = touchPad.visible = persistentUpdate = false;
 					openSubState(new ResetScoreSubState('', curDifficulty, '', curWeek));
 					FlxG.sound.play(Paths.sound('scrollMenu'));
 				}

@@ -150,6 +150,8 @@ class AmongCreditsState extends MusicBeatState
         add(baritone);
         
         updateDescription();
+        
+        addTouchPad("LEFT_RIGHT", "A_B");
     }
 
     override public function update(elapsed:Float):Void
