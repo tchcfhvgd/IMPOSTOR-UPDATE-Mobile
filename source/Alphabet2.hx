@@ -24,7 +24,7 @@ class Alphabet2 extends FlxSpriteGroup
 	public var text(default, set):String;
 
 	public var bold:Bool = false;
-	public var letters:Array<AlphaCharacter> = [];
+	public var letters:Array<AlphaCharacter2> = [];
 
 	public var isMenuItem:Bool = false;
 	public var targetY:Int = 0;
@@ -106,7 +106,7 @@ class Alphabet2 extends FlxSpriteGroup
 		while (i > 0)
 		{
 			--i;
-			var letter:AlphaCharacter = letters[i];
+			var letter:AlphaCharacter2 = letters[i];
 			if(letter != null)
 			{
 				letter.kill();
@@ -197,8 +197,8 @@ class Alphabet2 extends FlxSpriteGroup
 				var spaceChar:Bool = (character == " " || (bold && character == "_"));
 				if (spaceChar) consecutiveSpaces++;
 
-				var isAlphabet:Bool = AlphaCharacter.isTypeAlphabet(character.toLowerCase());
-				if (AlphaCharacter.allLetters.exists(character.toLowerCase()) && (!bold || !spaceChar))
+				var isAlphabet:Bool = AlphaCharacter2.isTypeAlphabet(character.toLowerCase());
+				if (AlphaCharacter2.allLetters.exists(character.toLowerCase()) && (!bold || !spaceChar))
 				{
 					if (consecutiveSpaces > 0)
 					{
@@ -211,7 +211,7 @@ class Alphabet2 extends FlxSpriteGroup
 					}
 					consecutiveSpaces = 0;
 
-					var letter:AlphaCharacter = new AlphaCharacter(xPos, rows * Y_PER_ROW * scaleY, character, bold, this);
+					var letter:AlphaCharacter2 = new AlphaCharacter2(xPos, rows * Y_PER_ROW * scaleY, character, bold, this);
 					letter.x += letter.letterOffset[0] * scaleX;
 					letter.y -= letter.letterOffset[1] * scaleY;
 					letter.row = rows;
@@ -260,7 +260,7 @@ typedef Letter = {
 	?offsetsBold:Array<Float>
 }
 
-class AlphaCharacter extends FlxSprite
+class AlphaCharacter2 extends FlxSprite
 {
 	//public static var alphabet:String = "abcdefghijklmnopqrstuvwxyz";
 	//public static var numbers:String = "1234567890";
@@ -315,7 +315,7 @@ class AlphaCharacter extends FlxSprite
 		'~'  => {offsets: [0, 16]}
 	];
 
-	var parent:Alphabet;
+	var parent:Alphabet2;
 	public var alignOffset:Float = 0; //Don't change this
 	public var letterOffset:Array<Float> = [0, 0];
 	public var spawnPos:FlxPoint = new FlxPoint();
@@ -323,7 +323,7 @@ class AlphaCharacter extends FlxSprite
 
 	public var row:Int = 0;
 	public var rowWidth:Float = 0;
-	public function new(x:Float, y:Float, character:String, bold:Bool, parent:Alphabet)
+	public function new(x:Float, y:Float, character:String, bold:Bool, parent:Alphabet2)
 	{
 		super(x, y);
 		this.parent = parent;
